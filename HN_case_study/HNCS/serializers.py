@@ -3,9 +3,9 @@ from .models import Story
 
 
 class GenericItemSerializer(serializers.Serializer):
-    story_id = serializers.CharField()
+    story_id = serializers.IntegerField(required=False)
     by = serializers.CharField(required=False)
-    descendants = serializers.IntegerField()
+    descendants = serializers.IntegerField(required=False)
     poll = serializers.IntegerField(required=False)
     parent = serializers.IntegerField(required=False)
     kids = serializers.ListField(child=serializers.IntegerField(), required=False)
@@ -18,3 +18,4 @@ class GenericItemSerializer(serializers.Serializer):
     url = serializers.CharField(required=False)
     time = serializers.DateTimeField()
     dead = serializers.BooleanField(default=False)
+    in_house = serializers.CharField(required=False) 

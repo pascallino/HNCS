@@ -28,6 +28,7 @@ class Story(Document):
     url = StringField()  # URL of the story
     time = DateTimeField()  # Ensure Unix time is converted to datetime when saving
     dead = BooleanField(default=False)
+    in_house = StringField(default="No") 
     
 class Job(Document):
     by = StringField()  # The username of the item's author
@@ -40,6 +41,7 @@ class Job(Document):
     type = StringField(choices=["job", "story", "comment", "poll", "pollopt"])  # Limited to valid types
     url = StringField()  # URL of the story
     dead = BooleanField(default=False)
+    in_house = StringField(default="No") 
 
 class Poll(Document):
     by = StringField()  # The username of the item's author
@@ -54,6 +56,7 @@ class Poll(Document):
     title = StringField()
     type = StringField(choices=["job", "story", "comment", "poll", "pollopt"])  # Limited to valid types
     dead = BooleanField(default=False)
+    in_house = StringField(default="No") 
     
 class Pollopt(Document):
     by = StringField()

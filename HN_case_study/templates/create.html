@@ -1,0 +1,114 @@
+{% extends 'master.html' %}
+
+{% block title %}
+    <h3>New item</h3>
+{% endblock title %}
+
+{% block contents %}
+<h4>Create item</h4>
+<hr>
+<br>
+<form id="Createform" class="container mt-4">
+    {% csrf_token %}
+    <div class="mb-3">
+        <select id="type" class="form-control" required>
+            <option value="" disabled selected>Select item</option>
+            <option value="story">story</option>
+            <option value="job">job</option>
+            <option value="poll">poll</option>
+        </select>
+    </div>
+    <div class="mb-3">
+        <input type="text" id="by" class="form-control" placeholder="Enter Authors Name" required>
+    </div>
+    <div class="mb-3">
+        
+        <textarea id="title" class="form-control" placeholder="Enter title here" required></textarea>
+    </div>
+
+    <div class="mb-3">
+        <input type="text" id="text" class="form-control" placeholder="Enter text (optional)">
+    </div>
+
+    <div class="mb-3">
+        <input type="text" id="url" class="form-control" placeholder="Enter URL to your story, poll, or job" >
+    </div>
+
+    <!-- <div class="mb-3">
+        <label for="time" class="form-label">Time</label>
+        <input type="datetime-local" id="time" class="form-control" required>
+    </div> -->
+
+    
+<div style="float: right;">
+    <button type="submit" class="btn btn-primary">Submit</button></div>
+</form>
+<script src="https://code.jquery.com/jquery-3.6.4.min.js"></script>
+<script>
+    const timezone_ = Intl.DateTimeFormat().resolvedOptions().timeZone;
+    // JavaScript to handle disabling the URL input based on the dropdown selection
+    document.getElementById('type').addEventListener('change', function () {
+        const urlInput = document.getElementById('url');
+        if (this.value === 'poll') {
+            urlInput.disabled = true;
+            urlInput.placeholder = "Disabled for Poll";
+        } else {
+            urlInput.disabled = false;
+            urlInput.placeholder = "URL";
+        }
+    });
+
+
+
+    $('#Createform').submit(function (event) {
+        // Prevent the default form submission
+        event.preventDefault();
+        const now = new Date();
+        const localDatetime = now.toISOString().slice(0, 16); 
+        var type = $('#type').val();
+        // Gather form data
+        const formData = {
+            by: $('#by').val(),
+            text: $('#text').val(),
+            title: $('#title').val(),
+            type: $('#type').val(),
+            url: $('#url').val(),
+            time: localDatetime,
+            in_house: 'Yes'
+        };
+    
+        // Send AJAX POST request
+        $.ajax({
+            url: `http://localhost:8000/api/item/create/${type}`, 
+            type: 'POST',
+            contentType: 'application/json',
+            data: JSON.stringify(formData),
+            headers: {
+                'X-CSRFToken': getCSRFToken() // Add CSRF token if required by Django
+            },
+            success: function (response) {
+                alert('Item created successfully: ' + response.message);
+                console.log(response);
+            },
+            error: function (xhr) {
+                alert('Failed to create item. See console for details.');
+                console.error(xhr.responseText);
+            }
+        });
+    });
+    
+    // Helper function to get CSRF token from cookies
+    function getCSRFToken() {
+        const cookies = document.cookie.split(';');
+        for (let i = 0; i < cookies.length; i++) {
+            const cookie = cookies[i].trim();
+            if (cookie.startsWith('csrftoken=')) {
+                return cookie.substring('csrftoken='.length);
+            }
+        }
+        return '';
+    }
+    
+
+</script>
+{% endblock contents %}

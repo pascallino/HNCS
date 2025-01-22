@@ -1,6 +1,6 @@
 {% extends 'master.html' %}
 {% load custom_filters %}
-
+{% load tz %}
 
 {% block title %}
     HNCS
@@ -13,20 +13,31 @@
     {% if story.title %}
     <div class="col-sm-6 mb-3">
         <div class="card">
-            <div class="card-header">
-                {{ story.time|format_timestamp}}
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <span>{{ story.time|format_timestamp }}</span>
+                    {% if story.in_house == "Yes" %}
+                    <div>
+                        <a href="#" title="Edit item" class="text-decoration-none text-primary me-2">
+                            <i class="fa-regular fa-pen-to-square"></i>
+                        </a>
+                        <a href="#" title="Delete item" class="text-decoration-none text-danger">
+                            <i class="fa-solid fa-trash-can"></i>
+                        </a>
+                    </div>
+                    {% endif %}
+
               </div>
             <div class="card-body">
                 <h5 class="card-title">{{ story.title }}</h5>
                 <p class="card-text">{{ story.text|default:" " }}</p>
                 {% if story.story_id %}
-                <a href="{% url 'details' story.story_id %}" class="btn btn-primary">view details</a>
+                <a href="{% url 'details' story.story_id  story.type %}" class="btn btn-primary"> details</a>
 
                 {% elif story.job_id %}
-                <a href="{% url 'details' story.job_id %}" class="btn btn-primary">view details</a>
+                <a href="{% url 'details' story.job_id %}" class="btn btn-primary"> details</a>
 
                 {% else %}
-                <a href="{% url 'details' story.poll_id %}" class="btn btn-primary">view details</a>
+                <a href="{% url 'details' story.poll_id %}" class="btn btn-primary"> details</a>
 
                 {% endif %}
                         </div>

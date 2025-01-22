@@ -23,7 +23,11 @@
     <p id="loading-message" style="display:none;">Loading comments...</p>
 <br>
 
+{% if story.parts %}
+<hr>
+<h2>poll opts </h2>
     <div id="parts-container"></div>
+    {% endif %}
 </div>
 <script src="https://code.jquery.com/jquery-3.6.4.min.js"></script>
 <script>
@@ -80,35 +84,31 @@
       // Function to fetch parts
       function fetchParts(partsIds, partContainer) {
         if (!partsIds || partsIds.length === 0) {
+            console.log("No parts to fetch.");
             return;
         }
-
-       
-
+    
+        console.log("Fetching parts:", partsIds);
+    
         partsIds.forEach(function(partId) {
             $.ajax({
                 url: `${apiUrl}${partId}.json?print=pretty`,
                 method: "GET",
                 success: function(data) {
-                    if (data && data.type === "poll") {
-                        // Create a part container
+                    if (data) {
+                        console.log("Fetched part:", data);
                         var partHtml = `
                             <div class="part">
-                                <p><strong>${data.by || "Anonymous"}:</strong> ${data.text || "poll opt deleted"}</p>
-                                
+                                <p><strong>${data.by || "Anonymous"}:</strong> ${data.text || "No text available"}</p>
                             </div>
                         `;
-                        var partsHtml = $(partHtml);
-                        partContainer.append(partsHtml);
-
-                       
+                        partContainer.append($(partHtml));
+                    } else {
+                        console.warn("Part data not found for ID:", partId);
                     }
                 },
                 error: function() {
-                    console.error("Failed to fetch parts with ID:", partId);
-                },
-                complete: function() {
-                    // loadingMessage.hide(); // Hide loading message when done
+                    console.error("Failed to fetch part with ID:", partId);
                 }
             });
         });
