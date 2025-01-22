@@ -1,0 +1,60 @@
+{% extends 'master.html' %}
+{% load custom_filters %}
+
+
+{% block title %}
+    HNCS
+{% endblock title %}
+
+{% block contents %}
+<br><br>
+<div class="row">
+    {% for story in page_obj %}
+    {% if story.title %}
+    <div class="col-sm-6 mb-3">
+        <div class="card">
+            <div class="card-header">
+                {{ story.time|format_timestamp}}
+              </div>
+            <div class="card-body">
+                <h5 class="card-title">{{ story.title }}</h5>
+                <p class="card-text">{{ story.text|default:" " }}</p>
+                {% if story.story_id %}
+                <a href="{% url 'details' story.story_id %}" class="btn btn-primary">view details</a>
+
+                {% elif story.job_id %}
+                <a href="{% url 'details' story.job_id %}" class="btn btn-primary">view details</a>
+
+                {% else %}
+                <a href="{% url 'details' story.poll_id %}" class="btn btn-primary">view details</a>
+
+                {% endif %}
+                        </div>
+        </div>
+    </div>
+    {% endif %}
+    {% endfor %}
+</div>
+
+<nav aria-label="Page navigation">
+    <ul class="pagination justify-content-center">
+        {% if page_obj.has_previous %}
+        <li class="page-item">
+            <a class="page-link" href="?page={{ page_obj.previous_page_number }}">Previous</a>
+        </li>
+        {% endif %}
+        {% for num in page_obj.paginator.page_range %}
+        <li class="page-item {% if page_obj.number == num %}active{% endif %}">
+            {% if page_obj %}
+            <a class="page-link" href="?page={{ num }}">{{ num }}</a>
+            {% endif %}
+        </li>
+        {% endfor %}
+        {% if page_obj.has_next %}
+        <li class="page-item">
+            <a class="page-link" href="?page={{ page_obj.next_page_number }}">Next</a>
+        </li>
+        {% endif %}
+    </ul>
+</nav>
+{% endblock contents %}

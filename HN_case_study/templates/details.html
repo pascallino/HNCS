@@ -1,0 +1,154 @@
+{% extends 'master.html' %}
+{% load custom_filters %}
+
+
+{% block title %}
+    details  for {{ item_id }}
+{% endblock title %}
+
+{% block contents %}
+<div>
+    <h2>{{ story.title }}</h2>
+    <p><strong>By:</strong> {{ story.by }}</p>
+    {% if story.url %}
+    <p><strong>URL:</strong> <a href="{{ story.url }}" target="_blank">{{ story.url }}</a></p>
+    {% endif %}
+    <p><strong>Score:</strong> {{ story.score }}</p>
+    <p><strong>Total Comments:</strong> {{ story.descendants }}</p>
+</div>
+<div id="comments-section">
+    <h3>Comments</h3>
+    <div id="nocomments" style="display: none;"> no comments yet</div>
+    <div id="comments-container"></div>
+    <p id="loading-message" style="display:none;">Loading comments...</p>
+<br>
+
+    <div id="parts-container"></div>
+</div>
+<script src="https://code.jquery.com/jquery-3.6.4.min.js"></script>
+<script>
+    var item_id = "{{ item_id }}";
+    // Load the initial question when the page loads
+    var apiUrl = "https://hacker-news.firebaseio.com/v0/item/";
+    var commentsContainer = $("#comments-container");
+    var partscontainer = $("#parts-container");
+    var loadingMessage = $("#loading-message");
+
+    // Function to fetch comments recursively
+    function fetchComments(commentIds, parentContainer) {
+        if (!commentIds || commentIds.length === 0) {
+            return;
+        }
+
+        loadingMessage.show(); // Show loading message
+
+        commentIds.forEach(function(commentId) {
+            $.ajax({
+                url: `${apiUrl}${commentId}.json?print=pretty`,
+                method: "GET",
+                success: function(data) {
+                    if (data && data.type === "comment") {
+                        // Create a comment container
+                        var commentHtml = `
+                            <div class="comment">
+                                <p><strong>${data.by || "Anonymous"}:</strong> ${data.text || "Comment deleted"}</p>
+                                <div class="replies" id="replies-${data.id}"></div>
+                            </div>
+                        `;
+                        var commentElement = $(commentHtml);
+                        parentContainer.append(commentElement);
+
+                        // Recursively fetch replies (if any)
+                        if (data.kids) {
+                            fetchComments(data.kids, commentElement.find(`#replies-${data.id}`));
+                        }
+                    }
+                },
+                error: function() {
+                    console.error("Failed to fetch comment with ID:", commentId);
+                },
+                complete: function() {
+                    loadingMessage.hide(); // Hide loading message when done
+                }
+            });
+        });
+    }
+
+
+
+
+      // Function to fetch parts
+      function fetchParts(partsIds, partContainer) {
+        if (!partsIds || partsIds.length === 0) {
+            return;
+        }
+
+       
+
+        partsIds.forEach(function(partId) {
+            $.ajax({
+                url: `${apiUrl}${partId}.json?print=pretty`,
+                method: "GET",
+                success: function(data) {
+                    if (data && data.type === "poll") {
+                        // Create a part container
+                        var partHtml = `
+                            <div class="part">
+                                <p><strong>${data.by || "Anonymous"}:</strong> ${data.text || "poll opt deleted"}</p>
+                                
+                            </div>
+                        `;
+                        var partsHtml = $(partHtml);
+                        partContainer.append(partsHtml);
+
+                       
+                    }
+                },
+                error: function() {
+                    console.error("Failed to fetch parts with ID:", partId);
+                },
+                complete: function() {
+                    // loadingMessage.hide(); // Hide loading message when done
+                }
+            });
+        });
+    }
+    // Load the comments for the story when the page loads
+    $(document).ready(function () {
+        if ("{{ story.kids }}".length > 0) {
+            var rootComments = JSON.parse("{{ story.kids|safe }}");
+            fetchComments(rootComments, commentsContainer);
+        }
+        else {
+            var nocomments = $("#nocomments");
+            nocomments.show();
+        }
+
+        if ("{{ story.parts }}".length > 0) {
+            var Parts = JSON.parse("{{ story.parts|safe }}");
+            fetchParts(Parts, partscontainer);
+        }
+
+
+    });
+</script>
+
+<style>
+    .comment {
+        margin-bottom: 20px;
+        padding-left: 20px;
+        border-left: 2px solid #ddd;
+    }
+    .part {
+        margin-bottom: 20px;
+        padding-left: 20px;
+        border-left: 2px solid #ddd;
+    }
+
+    .replies {
+        margin-top: 10px;
+        padding-left: 20px;
+        border-left: 2px solid #ccc;
+    }
+</style>
+{% endblock contents %}
