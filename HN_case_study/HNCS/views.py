@@ -30,6 +30,7 @@ def generate_unique_id():
 class ItemAPIView(APIView):
     renderer_classes = [JSONRenderer]
     def get(self, request, type=None):
+        """ GET request to list each item based on type  """ 
         # Filter by type (story, poll, job)
         if type == "story":
             items = Story.objects.all()
@@ -45,8 +46,10 @@ class ItemAPIView(APIView):
 
 
 class CreateItemAPIView(APIView):
+    """ create api class  """ 
     renderer_classes = [JSONRenderer]
     def post(self, request, type):
+        """ post request to save each item based on type  """ 
         # timezone_ = request.data.get('timezone')
         # if timezone_:
         #     request.session['timezone'] = timezone_  # Store in session
@@ -123,6 +126,13 @@ class CreateItemAPIView(APIView):
 
 
 def index(request):
+    """ function to render the  index page 
+    syncval is used to know how many items got saved
+    the type is used to know which api to call
+    search_query is used to determine if the search button was called
+    type_value helps to keep track of type and retain it whatever
+    be the results from search query or page load
+    """
     type_value = ''
     syncval = SyncVal.objects.first()
     if not syncval:
@@ -133,7 +143,6 @@ def index(request):
     # if timezone_:
     #     activate(timezone_)
     type = request.GET.get('type', '')
-    print(type)
     if type == 'story':
         response = requests.get("http://localhost:8000/api/item/story")
     elif type ==  'job':
@@ -166,6 +175,9 @@ def index(request):
 
 
 def details(request, item_id, type):
+    """ function to fetch commentsdetails for each item by id (story, 
+    job or poll) 
+    if its created in house it will get from MongoDB"""
     item_url = f"https://hacker-news.firebaseio.com/v0/item/{item_id}.json?print=pretty"
     item_response = requests.get(item_url)
     item_data = item_response.json() if item_response.status_code == 200 else {}
@@ -180,10 +192,13 @@ def details(request, item_id, type):
 
 
 def create_get(request):
+     """ function to render the create page, with a create_link flag 
+    to hide some links on the maste page """
      return render(request, 'create.html', {'create_link': 1})
  
  
 def delete_item(request, itemId, type):
+    """ function to delete each item by id (story, job or poll) """
     if type == 'story':
         story = Story.objects.filter(story_id=itemId).first()
         if story:
@@ -202,6 +217,7 @@ def delete_item(request, itemId, type):
     return JsonResponse({'status': 'error'})
 
 def get_item(request, itemId, type):
+    """ function to get each item by id (story, job or poll) """
     if type == 'story':
         story = Story.objects.filter(story_id=itemId).first()
         if story:
@@ -255,6 +271,7 @@ def get_item(request, itemId, type):
 
 
 def modify_item(request, itemId, type):
+    """ function to modify each item by id (story, job or poll) """
     data = json.loads(request.body)
     if type == 'story':
         story = Story.objects.filter(story_id=itemId).first()

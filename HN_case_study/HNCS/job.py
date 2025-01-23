@@ -26,7 +26,10 @@ def Store_News_every_five_minutes():
         data = response.json()
         Kids = []
         Parts =[]
-        type=data.get("type", "")
+        if data.get("type"):
+            type=data.get("type")
+        else:
+            return
         if type == "comment":
             return
         dead = data.get("dead", False)
@@ -114,25 +117,25 @@ def Store_News_every_five_minutes():
                 print(f"Record {current_id} saved successfully.")
                 syncval_obj.value = syncval_obj.value + 1
                 print("poll")
-        elif type == "pollopt":
-            chk_pollopt = Pollopt.objects.filter(pollopt_id=data.get("id")).first()
-            if not chk_pollopt and dead == False and deleted ==False:
-                pollopt = Pollopt(
-                    pollopt_id=data.get("id"),
-                    by=data.get("by"),
-                    poll=data.get("poll"),
-                    score=data.get("score"),
-                    text=data.get("text"),
-                    title=data.get("title"),
-                    type=data.get("type"),
-                    time=datetime.fromtimestamp(data.get("time")),
-                    dead = data.get("dead", False),
-                    deleted = data.get("deleted", False)
-                )
-                pollopt.save()
-                print(f"Record {current_id} saved successfully.")
-                syncval_obj.value = syncval_obj.value + 1
-                print("pollopt")
+        # elif type == "pollopt":
+        #     chk_pollopt = Pollopt.objects.filter(pollopt_id=data.get("id")).first()
+        #     if not chk_pollopt and dead == False and deleted ==False:
+        #         pollopt = Pollopt(
+        #             pollopt_id=data.get("id"),
+        #             by=data.get("by"),
+        #             poll=data.get("poll"),
+        #             score=data.get("score"),
+        #             text=data.get("text"),
+        #             title=data.get("title"),
+        #             type=data.get("type"),
+        #             time=datetime.fromtimestamp(data.get("time")),
+        #             dead = data.get("dead", False),
+        #             deleted = data.get("deleted", False)
+        #         )
+        #         pollopt.save()
+        #         print(f"Record {current_id} saved successfully.")
+        #         syncval_obj.value = syncval_obj.value + 1
+        #         print("pollopt")
             
     
        # Step 6: Update the sync value

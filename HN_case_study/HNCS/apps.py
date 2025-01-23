@@ -16,12 +16,12 @@ class HncsConfig(AppConfig):
         scheduler.add_job(
             Store_News_every_five_minutes, 
             trigger=IntervalTrigger(seconds=10),
-            id=str(datetime.now),  # Unique ID for the job
+            id=str(datetime.now),  # Unique ID for the job usong datetime
             replace_existing=True  # Replace if the job ID already exists
         )
 
         # Start the scheduler
-        #scheduler.start()
+        scheduler.start()
         connect(
             db='HNCS',
             host='localhost',
