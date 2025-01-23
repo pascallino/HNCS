@@ -7,7 +7,6 @@
 {% endblock title %}
 
 {% block contents %}
-<br><br>
 <div class="row">
     {% for story in page_obj %}
     {% if story.title %}
@@ -16,28 +15,45 @@
                 <div class="card-header d-flex justify-content-between align-items-center">
                     <span>{{ story.time|format_timestamp }}</span>
                     {% if story.in_house == "Yes" %}
-                    <div>
-                        <a href="#" title="Edit item" class="text-decoration-none text-primary me-2">
+                    <div class="d-flex justify-content-between align-items-center">
+                        {% if story.story_id %}
+                        <a href="#" title="Edit item"  onclick="getItemData('{{ story.story_id}}', '{{ story.type }}')"  data-bs-toggle="modal" data-bs-target="#modifyItemModal" class="text-decoration-none text-primary me-2">
                             <i class="fa-regular fa-pen-to-square"></i>
                         </a>
-                        <a href="#" title="Delete item" class="text-decoration-none text-danger">
+                        <a href="#"   onclick="deleteitem('{{ story.story_id}}', '{{ story.type }}')"  title="Delete item" class="text-decoration-none text-danger">
                             <i class="fa-solid fa-trash-can"></i>
+                        </a>     
+                        {% elif story.job_id %}
+                        <a href="#" title="Edit item"  onclick="getItemData('{{ story.job_id}}', '{{ story.type }}')"  data-bs-toggle="modal" data-bs-target="#modifyItemModal" class="text-decoration-none text-primary me-2">
+                            <i class="fa-regular fa-pen-to-square"></i>
                         </a>
+                      <a href="#"   onclick="deleteitem('{{ story.job_id }}', '{{ story.type }}')"  title="Delete item" class="text-decoration-none text-danger">
+                        <i class="fa-solid fa-trash-can"></i>
+                      </a>  
+                      {% elif story.poll_id %}
+                     <a href="#" title="Edit item"  onclick="getItemData('{{ story.poll_id}}', '{{ story.type }}')"  data-bs-toggle="modal" data-bs-target="#modifyItemModal" class="text-decoration-none text-primary me-2">
+                        <i class="fa-regular fa-pen-to-square"></i>
+                    </a>
+                    <a href="#" onclick="deleteitem('{{ story.poll_id}}', '{{ story.type }}')"  title="Delete item" class="text-decoration-none text-danger">
+                        <i class="fa-solid fa-trash-can"></i>
+                    </a>  
+                    {% endif %}
+
                     </div>
                     {% endif %}
 
               </div>
             <div class="card-body">
-                <h5 class="card-title">{{ story.title }}</h5>
+                <h6 class="card-title">{{ story.title }}</h6>
                 <p class="card-text">{{ story.text|default:" " }}</p>
                 {% if story.story_id %}
                 <a href="{% url 'details' story.story_id  story.type %}" class="btn btn-primary"> details</a>
 
                 {% elif story.job_id %}
-                <a href="{% url 'details' story.job_id %}" class="btn btn-primary"> details</a>
+                <a href="{% url 'details' story.job_id story.type %}" class="btn btn-primary"> details</a>
 
-                {% else %}
-                <a href="{% url 'details' story.poll_id %}" class="btn btn-primary"> details</a>
+                {% elif story.poll_id %}
+                <a href="{% url 'details' story.poll_id story.type %}" class="btn btn-primary"> details</a>
 
                 {% endif %}
                         </div>
@@ -46,6 +62,62 @@
     {% endif %}
     {% endfor %}
 </div>
+
+
+
+
+<!-- modify item  Modal -->
+<div class="modal fade" id="modifyItemModal" tabindex="-1" aria-labelledby="modifyItemModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="modifyItemModalLabel">Modify Item</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form id="Modifyform" class="container mt-4">
+                    {% csrf_token %}
+                    <label id="itemId"  hidden></label>
+                    <div class="mb-3">
+                        <select id="typeSel" class="form-control" disabled required>
+                            <option value="" disabled selected>Select item</option>
+                            <option value="story">story</option>
+                            <option value="job">job</option>
+                            <option value="poll">poll</option>
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <input type="text" id="by" class="form-control" placeholder="Enter Authors Name" required>
+                    </div>
+                    <div class="mb-3">
+                        
+                        <textarea id="title" class="form-control" placeholder="Enter title here" required></textarea>
+                    </div>
+                
+                    <div class="mb-3">
+                        <input type="text" id="text" class="form-control" placeholder="Enter text (optional)">
+                    </div>
+                
+                    <div class="mb-3">
+                        <input type="text" id="url" class="form-control" placeholder="Enter URL to your story or job" >
+                    </div>
+                
+                    <!-- <div class="mb-3">
+                        <label for="time" class="form-label">Time</label>
+                        <input type="datetime-local" id="time" class="form-control" required>
+                    </div> -->
+                
+                    
+                <div style="float: right;">
+                    <button type="submit" class="btn btn-primary">Submit</button></div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+
 
 <nav aria-label="Page navigation">
     <ul class="pagination justify-content-center">
@@ -68,4 +140,133 @@
         {% endif %}
     </ul>
 </nav>
+<script src="https://code.jquery.com/jquery-3.6.4.min.js"></script>
+<script>
+
+       // JavaScript to handle disabling the URL input based on the dropdown selection
+       document.getElementById('type').addEventListener('change', function () {
+        const urlInput = document.getElementById('url');
+        if (this.value === 'poll') {
+            urlInput.disabled = true;
+            urlInput.placeholder = "Disabled for Poll";
+        } else {
+            urlInput.disabled = false;
+            urlInput.placeholder = "URL";
+        }
+    });
+
+
+    function getItemData(itemId, type) {
+        $.ajax({
+            url: `/get_item/${itemId}/${type}`, // Django route for retrieving item data
+            type: 'GET',
+            contentType: 'application/json',
+            success: function (response) {
+                // Populate the form or display the data dynamically
+                console.log(response);
+                populateForm(response); // Call a function to populate form with data
+            },
+            error: function (xhr) {
+                alert('Failed to retrieve the item data. See console for details.');
+                console.error(xhr.responseText);
+            }
+        });
+
+        
+    }
+    
+    // Example function to populate a form with retrieved data
+    function populateForm(data) {
+        // Assuming the form has fields with these IDs
+        $('#itemId').val(data.id);
+        $('#by').val(data.by);
+        $('#typeSel').val(data.type);
+        $('#title').val(data.title);
+        $('#text').val(data.text);
+        $('#url').val(data.url);
+        const typeSel = document.getElementById('typeSel');
+        const urlInput = document.getElementById('url');
+        if (typeSel.value === 'poll') {
+            urlInput.disabled = true;
+            urlInput.placeholder = "Disabled for Poll";
+        } else {
+            urlInput.disabled = false;
+            urlInput.placeholder = "Enter URL to your story or job";
+        }
+    }
+    
+
+
+
+    $('#Modifyform').submit(function (event) {
+        // Prevent the default form submission
+        itemId = $('#itemId').val();
+        event.preventDefault();
+        const now = new Date();
+        const localDatetime = now.toISOString().slice(0, 16); 
+        var type = $('#typeSel').val();
+        // Gather form data
+        const formData = {
+            by: $('#by').val(),
+            text: $('#text').val(),
+            title: $('#title').val(),
+            type: $('#typeSel').val(),
+            url: $('#url').val(),
+            time: localDatetime,
+        };
+        $.ajax({
+            url: `/modify_item/${itemId}/${type}`, // Django route
+            type: 'PUT',
+            contentType: 'application/json',
+            data: JSON.stringify(formData),
+            headers: {
+                'X-CSRFToken': getCSRFToken() // CSRF token for security
+            },
+            success: function (response) {
+                alert('Item modified successfully!');
+                console.log(response);
+                location.reload();
+                // Optionally reload the page or update the UI dynamically
+            },
+            error: function (xhr) {
+                alert('Failed to modify the item. See console for details.');
+                console.error(xhr.responseText);
+            }
+        });
+    });
+
+
+    function deleteitem(storyId, type) {
+        if (confirm("Are you sure you want to delete this item?")) {
+            // Send AJAX DELETE request
+            $.ajax({
+                url: `/delete_item/${storyId}/${type}`, 
+                type: 'DELETE',
+                headers: {
+                    'X-CSRFToken': getCSRFToken() 
+                },
+                success: function (response) {
+                    alert('Item deleted successfully.');
+                    location.reload(); // Reload the page or dynamically update the UI
+                },
+                error: function (xhr) {
+                    alert('Failed to delete item. See console for details.');
+                    console.error(xhr.responseText);
+                }
+            });
+        }
+    }
+    
+    // Helper function to get CSRF token from cookies
+    function getCSRFToken() {
+        const cookies = document.cookie.split(';');
+        for (let i = 0; i < cookies.length; i++) {
+            const cookie = cookies[i].trim();
+            if (cookie.startsWith('csrftoken=')) {
+                return cookie.substring('csrftoken='.length);
+            }
+        }
+        return '';
+    }
+</script>
 {% endblock contents %}

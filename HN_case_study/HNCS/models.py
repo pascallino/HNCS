@@ -45,7 +45,7 @@ class Job(Document):
 
 class Poll(Document):
     by = StringField()  # The username of the item's author
-    decendants = IntField() #decendants total comment counts
+    descendants = IntField() #decendants total comment counts
     poll_id = IntField(required=True)  # Changed to IntField to match the data
     kids = ListField(IntField()) 
     parts = ListField(IntField()) 

@@ -4,6 +4,8 @@ from .models import Story
 
 class GenericItemSerializer(serializers.Serializer):
     story_id = serializers.IntegerField(required=False)
+    job_id = serializers.IntegerField(required=False)
+    poll_id = serializers.IntegerField(required=False)
     by = serializers.CharField(required=False)
     descendants = serializers.IntegerField(required=False)
     poll = serializers.IntegerField(required=False)

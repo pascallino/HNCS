@@ -5,9 +5,8 @@
 {% endblock title %}
 
 {% block contents %}
-<h4>Create item</h4>
+<h4>New item</h4>
 <hr>
-<br>
 <form id="Createform" class="container mt-4">
     {% csrf_token %}
     <div class="mb-3">
@@ -27,7 +26,7 @@
     </div>
 
     <div class="mb-3">
-        <input type="text" id="text" class="form-control" placeholder="Enter text (optional)">
+        <input type="text" id="text" class="form-control" placeholder="Enter text " required> 
     </div>
 
     <div class="mb-3">
@@ -49,6 +48,16 @@
     // JavaScript to handle disabling the URL input based on the dropdown selection
     document.getElementById('type').addEventListener('change', function () {
         const urlInput = document.getElementById('url');
+        const textInput = document.getElementById('text');
+        if (this.value === 'story') {
+            textInput.disabled = true;
+            textInput.placeholder = "Disabled for story";
+        }
+        else{
+            textInput.disabled = false;
+            textInput.placeholder = "Enter text";
+
+        }
         if (this.value === 'poll') {
             urlInput.disabled = true;
             urlInput.placeholder = "Disabled for Poll";
@@ -66,13 +75,19 @@
         const now = new Date();
         const localDatetime = now.toISOString().slice(0, 16); 
         var type = $('#type').val();
+        var urlv = $('#url').val();
+        if (urlv){
+            ;
+        }else{
+            url = 'No url';
+        }
         // Gather form data
         const formData = {
             by: $('#by').val(),
-            text: $('#text').val(),
+            text: $('#text').val() ? $('#text').val() : 'no text',
             title: $('#title').val(),
             type: $('#type').val(),
-            url: $('#url').val(),
+            url: $('#url').val() ? $('#url').val() : url,
             time: localDatetime,
             in_house: 'Yes'
         };
@@ -88,6 +103,11 @@
             },
             success: function (response) {
                 alert('Item created successfully: ' + response.message);
+                $('#by').val('');
+                $('#text').val('');
+                $('#title').val('');
+                $('#type').val('');
+                $('#url').val('');
                 console.log(response);
             },
             error: function (xhr) {

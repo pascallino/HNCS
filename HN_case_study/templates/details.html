@@ -18,7 +18,7 @@
 </div>
 <div id="comments-section">
     <h3>Comments</h3>
-    <div id="nocomments" style="display: none;"> no comments yet</div>
+    <div id="nocomments" > no comments yet</div>
     <div id="comments-container"></div>
     <p id="loading-message" style="display:none;">Loading comments...</p>
 <br>
@@ -115,13 +115,12 @@
     }
     // Load the comments for the story when the page loads
     $(document).ready(function () {
-        if ("{{ story.kids }}".length > 0) {
+        if ("{{ story.kids|length }}" > 0) {
             var rootComments = JSON.parse("{{ story.kids|safe }}");
             fetchComments(rootComments, commentsContainer);
-        }
-        else {
+        
             var nocomments = $("#nocomments");
-            nocomments.show();
+            nocomments.hide();
         }
 
         if ("{{ story.parts }}".length > 0) {
